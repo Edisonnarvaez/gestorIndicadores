@@ -1,0 +1,2 @@
+python manage.py makemigrations companies
+python manage.py migrate
