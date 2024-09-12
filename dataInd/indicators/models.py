@@ -1,9 +1,8 @@
 from django.db import models
 
-class Indicator(models.Model):
+class MacroProcess(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
-    process = models.ForeignKey('Process', on_delete=models.CASCADE)
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -12,7 +11,7 @@ class Indicator(models.Model):
 
 class Process(models.Model):
     name = models.CharField(max_length=100)
-    macroprocess = models.ForeignKey('MacroProcess', on_delete=models.CASCADE)
+    macroprocess = models.ForeignKey(MacroProcess, on_delete=models.CASCADE)  # Referencia corregida
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -21,6 +20,16 @@ class Process(models.Model):
 
 class SubProcess(models.Model):
     name = models.CharField(max_length=100)
+    process = models.ForeignKey(Process, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class Indicator(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
     process = models.ForeignKey(Process, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,4 +46,3 @@ class Result(models.Model):
 
     def __str__(self):
         return f'{self.indicator.name} - {self.value}'
-
