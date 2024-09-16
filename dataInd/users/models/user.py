@@ -1,6 +1,6 @@
 from django.db import models
-from .company import Company
-from .department import Department
+from dataInd.companies.models.company import Company
+from dataInd.companies.models.department import Department
 from .role import Role
 
 class User(models.Model):
