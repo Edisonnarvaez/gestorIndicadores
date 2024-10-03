@@ -20,5 +20,7 @@ from django.contrib import admin
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('indicadores.urls')), 
+    path('api/', include('indicators.urls')), 
+    path('api/', include('companies.urls')), 
+    path('api/', include('users.urls')), 
 ]
