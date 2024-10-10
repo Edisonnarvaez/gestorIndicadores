@@ -4,7 +4,6 @@ from .subprocess import SubProcess
 from users.models.user import User
 
 class Indicator(models.Model):
-    indicatorId = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     description = models.TextField()
     code = models.CharField(max_length=50)
@@ -21,12 +20,12 @@ class Indicator(models.Model):
     denominatorDescription = models.TextField()
     target = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
+    subProcess = models.ForeignKey(SubProcess, on_delete=models.CASCADE)
+    measurementFrequency = models.CharField(max_length=50)
+    status = models.BooleanField(default=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     creationDate = models.DateField(auto_now_add=True)
     updateDate = models.DateField(auto_now=True)
-    userId = models.ForeignKey(User, on_delete=models.CASCADE)
-    subProcessId = models.ForeignKey(SubProcess, on_delete=models.CASCADE)
-    status = models.BooleanField(default=True)
-    measurementFrequency = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name

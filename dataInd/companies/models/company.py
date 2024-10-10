@@ -1,7 +1,6 @@
 from django.db import models
 
 class Company(models.Model):
-    companyId = models.CharField(max_length=100, primary_key=True)  # Clave primaria personalizada
     name = models.CharField(max_length=255)
     nit = models.CharField(max_length=50)
     legalRepresentative = models.CharField(max_length=255)
@@ -9,7 +8,7 @@ class Company(models.Model):
     address = models.CharField(max_length=255)
     contactEmail = models.EmailField()
     foundationDate = models.DateField()
-    status = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)  # Activo/Inactivo
 
     def __str__(self):
         return self.name

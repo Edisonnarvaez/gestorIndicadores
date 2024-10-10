@@ -5,15 +5,16 @@ from .models.department import Department
 # Configurar el modelo Company en el admin
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('companyId', 'name', 'nit', 'status')
-    search_fields = ('companyId', 'name', 'nit')
+    list_display = ('id', 'name', 'nit', 'status')
+    search_fields = ('name', 'nit')
     list_filter = ('status',)
-    ordering = ('companyId',)
+    ordering = ('id',)
 
 # Configurar el modelo Department en el admin
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('departmentId', 'name', 'companyId', 'status')
-    search_fields = ('departmentId', 'name', 'companyId__name')
+    list_display = ('id', 'name', 'company', 'status')
+    search_fields = ('name', 'companyId__name')
     list_filter = ('status',)
-    ordering = ('departmentId',)
+    ordering = ('id',)
+

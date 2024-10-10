@@ -1,32 +1,27 @@
 from rest_framework import viewsets
 from companies.models.department import Department
 from companies.serializers.department_serializer import DepartmentSerializer
-
+from rest_framework.response import Response
+from rest_framework import status
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    queryset = Department.objects.all()
+    queryset = Department.objects.select_related('company').all()
     serializer_class = DepartmentSerializer
 
     def get_queryset(self):
-        """
-        Sobrescribe el método para hacer filtros personalizados si es necesario.
-        """
-        queryset = Department.objects.all()
-        # Puedes agregar lógica de filtrado aquí si es necesario
+        queryset = Department.objects.select_related('company').all()
         return queryset
-    # Método para listar todas las compañías (GET)
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    # Método para obtener una compañía específica (GET)
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    # Método para crear una nueva compañía (POST)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -34,7 +29,6 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    # Método para actualizar una compañía existente (PUT/PATCH)
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -43,7 +37,6 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         self.perform_update(serializer)
         return Response(serializer.data)
 
-    # Método para eliminar una compañía (DELETE)
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)

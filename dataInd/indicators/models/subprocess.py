@@ -4,7 +4,6 @@ from users.models.user import User
 from .process import Process
 
 class SubProcess(models.Model):
-    subProcessId = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     description = models.TextField()
     code = models.CharField(max_length=50)
@@ -13,8 +12,8 @@ class SubProcess(models.Model):
     status = models.BooleanField(default=True)
     creationDate = models.DateField(auto_now_add=True)
     updateDate = models.DateField(auto_now=True)
-    userId = models.ForeignKey(User, on_delete=models.CASCADE)
-    processId = models.ForeignKey(Process, on_delete=models.CASCADE)
+    process = models.ForeignKey(Process, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     
 
     def __str__(self):
