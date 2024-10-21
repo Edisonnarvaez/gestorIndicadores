@@ -10,3 +10,6 @@ router.register(r'roles', RoleViewSet)
 urlpatterns = [
     path('', include(router.urls)),
 ]
+
+
+#urlpatterns = router.urls

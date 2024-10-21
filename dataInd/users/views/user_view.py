@@ -1,10 +1,11 @@
-from users.serializers.user_serializer import UserSerializer
+from users.serializers.user_serializer import UserSerializer, LoginSerializer
 from users.models.user import User
+from django.contrib.auth import authenticate
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
-
+from rest_framework.authtoken.models import Token  # Si usas tokens
 
 # ViewSet para User
 class UserViewSet(viewsets.ModelViewSet):
@@ -28,11 +29,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({"error": "Username parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-# ViewSet para User
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
     # Actualizar el estado del usuario
     @action(detail=True, methods=['patch'])
     def update_status(self, request, pk=None):
@@ -43,10 +39,6 @@ class UserViewSet(viewsets.ModelViewSet):
             user.save()
             return Response({'status': 'User status updated'})
         return Response({'error': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
-# ViewSet para User
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
     # Resetear el password del usuario
     @action(detail=True, methods=['post'])
@@ -58,10 +50,6 @@ class UserViewSet(viewsets.ModelViewSet):
             user.save()
             return Response({'status': 'Password updated successfully'})
         return Response({'error': 'New password is required'}, status=status.HTTP_400_BAD_REQUEST)
-# ViewSet para User
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
     # Desactivar un usuario
     @action(detail=True, methods=['post'])
@@ -78,13 +66,26 @@ class UserViewSet(viewsets.ModelViewSet):
         user.status = True
         user.save()
         return Response({'status': 'User activated'})
-# ViewSet para User
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
     # Obtener la última fecha de login de un usuario
     @action(detail=True, methods=['get'])
     def last_login(self, request, pk=None):
         user = self.get_object()
         return Response({'lastLogin': user.lastLogin})
+
+    # Acción para manejar el login de usuarios
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+            user = authenticate(username=username, password=password)
+
+            if user is not None:
+                # Generar y devolver un token (si usas tokens)
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key, 'message': 'Login successful'})
+            else:
+                return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
