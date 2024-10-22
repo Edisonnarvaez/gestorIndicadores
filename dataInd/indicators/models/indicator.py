@@ -20,10 +20,10 @@ class Indicator(models.Model):
     denominatorDescription = models.TextField()
     target = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
-    subProcess = models.ForeignKey(SubProcess, on_delete=models.CASCADE)
+    subProcess = models.ForeignKey(SubProcess, on_delete=models.PROTECT)
     measurementFrequency = models.CharField(max_length=50)
     status = models.BooleanField(default=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     creationDate = models.DateField(auto_now_add=True)
     updateDate = models.DateField(auto_now=True)
 

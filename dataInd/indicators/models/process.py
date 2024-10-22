@@ -11,8 +11,8 @@ class Process(models.Model):
     status = models.BooleanField(default=True)
     creationDate = models.DateField(auto_now_add=True)
     updateDate = models.DateField(auto_now=True)
-    macroProcess = models.ForeignKey(MacroProcess, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    macroProcess = models.ForeignKey(MacroProcess, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     
 
     def __str__(self):

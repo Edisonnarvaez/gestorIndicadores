@@ -9,8 +9,8 @@ class Result(models.Model):
     calculatedValue = models.FloatField()
     creationDate = models.DateField(auto_now_add=True)
     updateDate = models.DateField(auto_now=True)
-    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    indicator = models.ForeignKey(Indicator, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     
     #def calculateResult(self):
     #    self.calculatedValue = self.numerator / self.denominator
