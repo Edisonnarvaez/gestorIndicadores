@@ -9,6 +9,8 @@ class Company(models.Model):
     contactEmail = models.EmailField()
     foundationDate = models.DateField()
     status = models.BooleanField(default=True)  # Activo/Inactivo
+    creationDate = models.DateField(auto_now_add=True)
+    updateDate = models.DateField(auto_now=True)
 
     def __str__(self):
         return self.name
