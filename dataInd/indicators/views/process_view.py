@@ -10,7 +10,7 @@ from ..serializers.process_serializer import ProcessSerializer
 class ProcessViewSet(viewsets.ModelViewSet):
     queryset = Process.objects.all()
     serializer_class = ProcessSerializer
-     # Método para listar todas las compañías (GET)
+    # Método para listar todas las compañías (GET)
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)

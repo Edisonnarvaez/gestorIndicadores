@@ -49,3 +49,12 @@ pip install -r requirements.txt
 para desactivar se coloca deactivate en la terminal y ya 
 deactivate
 
+
+
+
+Para revisar 
+
+un nuevo modelo y un nuevo campo en en el modelo de indicadores 
+para agregar periodicidad 
+ posteriormente en rewsultados agregar el nombre de la sede 
+crear un nuivo modelos de sedes 
