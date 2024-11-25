@@ -10,7 +10,7 @@ class Result(models.Model):
 
     numerator = models.FloatField()
     denominator = models.FloatField()
-    calculatedValue = models.FloatField()
+    calculatedValue = models.FloatField(null=True, blank=True)
 
     creationDate = models.DateField(auto_now_add=True)
     updateDate = models.DateField(auto_now=True)
