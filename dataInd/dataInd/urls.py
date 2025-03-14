@@ -19,9 +19,16 @@ from django.urls import path, include
 from django.contrib import admin
 #from indicadores import urls as indicadores_url
 
+from django.urls import path
+from users.views.user_view import PasswordResetRequestView, PasswordResetConfirmView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('indicators.urls')), 
     path('api/', include('companies.urls')), 
     path('api/', include('users.urls')), 
+    path('api-auth/', include('rest_framework.urls')),
+    path('api-token-auth/', include('rest_framework.urls')),
+    path('password-reset/', PasswordResetRequestView.as_view(), name='password-reset'),
+    path('password-reset-confirm/<int:user_id>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 ]

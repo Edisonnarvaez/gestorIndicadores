@@ -61,3 +61,4 @@ class User(AbstractBaseUser, PermissionsMixin):  # Agrega PermissionsMixin para 
     def has_module_perms(self, app_label):
         """Este método verifica si el usuario tiene permiso para ver el módulo (aplicación) especificado."""
         return self.is_superuser or self.is_active
+

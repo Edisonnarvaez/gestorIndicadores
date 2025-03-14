@@ -46,6 +46,9 @@ pip freeze > requirements.txt
 
 pip install -r requirements.txt
 
+
+python.exe -m pip install --upgrade pip
+
 para desactivar se coloca deactivate en la terminal y ya 
 deactivate
 

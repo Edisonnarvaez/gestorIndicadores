@@ -7,6 +7,15 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token  # Si usas tokens
 
+
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+
 # ViewSet para User
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -89,3 +98,40 @@ class UserViewSet(viewsets.ModelViewSet):
             else:
                 return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#------
+
+User = get_user_model()
+
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            user = User.objects.get(email=email)
+            token = PasswordResetTokenGenerator().make_token(user)
+            reset_url = request.build_absolute_uri(reverse('password-reset-confirm', args=[user.pk, token]))
+            send_mail(
+                'Password Reset Request',
+                f'Click the link to reset your password: {reset_url}',
+                'noreply@example.com',
+                [email],
+                fail_silently=False,
+            )
+            return Response({'message': 'Password reset link sent'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request, user_id, token):
+        try:
+            user = User.objects.get(pk=user_id)
+            if PasswordResetTokenGenerator().check_token(user, token):
+                new_password = request.data.get('new_password')
+                if new_password:
+                    user.set_password(new_password)
+                    user.save()
+                    return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+                return Response({'error': 'New password required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)

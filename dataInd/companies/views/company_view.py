@@ -4,10 +4,22 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.authentication import TokenAuthentication
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request in ['POST','PUT','DELETE','PATCH']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+       
+
 
     def get_queryset(self):
         queryset = Company.objects.all()
