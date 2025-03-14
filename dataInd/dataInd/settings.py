@@ -155,5 +155,5 @@ EMAIL_HOST = "smtp.gmail.com"  # Servidor SMTP (Gmail en este caso)
 EMAIL_PORT = 587  # Puerto para TLS
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "stiven.98020@gmail.com"  # Cambia esto por tu correo
-EMAIL_HOST_PASSWORD = "STIV#n8/.-98020"  # Usa una contraseña de aplicación si es Gmail
+EMAIL_HOST_PASSWORD = "tbaivckhijgizgpk"  # Usa una contraseña de aplicación si es Gmail
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
