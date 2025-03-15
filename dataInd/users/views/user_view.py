@@ -109,7 +109,9 @@ class PasswordResetRequestView(APIView):
         try:
             user = User.objects.get(email=email)
             token = PasswordResetTokenGenerator().make_token(user)
-            reset_url = request.build_absolute_uri(reverse('password-reset-confirm', args=[user.pk, token]))
+            #se debe ajustar por el link que se este utilizando el fron en produccion
+            reset_url = f"http://localhost:5173/password-reset-confirm/{user.pk}/{token}/"
+            #reset_url = request.build_absolute_uri(reverse('password-reset-confirm', args=[user.pk, token]))
             send_mail(
                 'Password Reset Request',
                 f'Click the link to reset your password: {reset_url}',
