@@ -1,90 +1,37 @@
-from users.serializers.user_serializer import UserSerializer, LoginSerializer
-from users.models.user import User
-from django.contrib.auth import authenticate
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
-from rest_framework.authtoken.models import Token  # Si usas tokens
-
-
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.mail import send_mail
-from django.contrib.auth import get_user_model
-from django.urls import reverse
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from django.contrib.auth import get_user_model, authenticate
+from django.core.mail import send_mail
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+import pyotp
+from users.serializers.user_serializer import UserSerializer, LoginSerializer
 
-# ViewSet para User
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import authenticate
+
+
+User = get_user_model()
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    # Filtrar usuarios por el estado (activo/inactivo)
-    @action(detail=False, methods=['get'])
-    def active(self, request):
-        active_users = User.objects.filter(status=True)
-        serializer = self.get_serializer(active_users, many=True)
-        return Response(serializer.data)
+    def get_tokens_for_user(self, user):
+        """Genera los tokens JWT para el usuario."""
+        refresh = RefreshToken.for_user(user)
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }
 
-    # Búsqueda de usuarios por nombre de usuario
-    @action(detail=False, methods=['get'])
-    def search_by_username(self, request):
-        username = request.query_params.get('username', None)
-        if username:
-            users = User.objects.filter(username__icontains=username)
-            serializer = self.get_serializer(users, many=True)
-            return Response(serializer.data)
-        return Response({"error": "Username parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Actualizar el estado del usuario
-    @action(detail=True, methods=['patch'])
-    def update_status(self, request, pk=None):
-        user = self.get_object()
-        status = request.data.get('status', None)
-        if status is not None:
-            user.status = status
-            user.save()
-            return Response({'status': 'User status updated'})
-        return Response({'error': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Resetear el password del usuario
-    @action(detail=True, methods=['post'])
-    def reset_password(self, request, pk=None):
-        user = self.get_object()
-        new_password = request.data.get('new_password', None)
-        if new_password:
-            user.set_password(new_password)
-            user.save()
-            return Response({'status': 'Password updated successfully'})
-        return Response({'error': 'New password is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Desactivar un usuario
-    @action(detail=True, methods=['post'])
-    def deactivate(self, request, pk=None):
-        user = self.get_object()
-        user.status = False
-        user.save()
-        return Response({'status': 'User deactivated'})
-
-    # Activar un usuario
-    @action(detail=True, methods=['post'])
-    def activate(self, request, pk=None):
-        user = self.get_object()
-        user.status = True
-        user.save()
-        return Response({'status': 'User activated'})
-
-    # Obtener la última fecha de login de un usuario
-    @action(detail=True, methods=['get'])
-    def last_login(self, request, pk=None):
-        user = self.get_object()
-        return Response({'lastLogin': user.lastLogin})
-
-    # Acción para manejar el login de usuarios
     @action(detail=False, methods=['post'])
     def login(self, request):
+        """Autenticación con username y password. Si tiene 2FA activado, solicita el código OTP."""
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
@@ -92,26 +39,53 @@ class UserViewSet(viewsets.ModelViewSet):
             user = authenticate(username=username, password=password)
 
             if user is not None:
-                # Generar y devolver un token (si usas tokens)
-                token, created = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key, 'message': 'Login successful'})
-            else:
-                return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
+                if user.otp_secret:
+                    return Response({'message': 'Ingrese su código 2FA', 'user_id': user.id}, status=status.HTTP_200_OK)
+                
+                tokens = self.get_tokens_for_user(user)
+                return Response(tokens, status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#------
+    @action(detail=False, methods=['post'])
+    def verify_2fa(self, request):
+        """Verifica el código 2FA y devuelve un token JWT."""
+        user_id = request.data.get('user_id')
+        otp_code = request.data.get('otp_code')
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not user.otp_secret or not user.verify_otp(otp_code):
+            return Response({'error': 'Código incorrecto o 2FA no activado'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        tokens = self.get_tokens_for_user(user)
+        return Response(tokens, status=status.HTTP_200_OK)
 
-User = get_user_model()
+    @action(detail=False, methods=['post'])
+    def enable_2fa(self, request):
+        """Habilita el 2FA generando una clave secreta para el usuario."""
+        user = request.user
+        user.generate_otp_secret()
+        return Response({'message': '2FA activado', 'secret': user.otp_secret}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'])
+    def disable_2fa(self, request):
+        """Desactiva el 2FA eliminando la clave secreta."""
+        user = request.user
+        user.otp_secret = None
+        user.save()
+        return Response({'message': '2FA desactivado'}, status=status.HTTP_200_OK)
 
 class PasswordResetRequestView(APIView):
     def post(self, request):
+        """Genera un token para restablecer contraseña y envía un email."""
         email = request.data.get('email')
         try:
             user = User.objects.get(email=email)
             token = PasswordResetTokenGenerator().make_token(user)
-            #se debe ajustar por el link que se este utilizando el fron en produccion
             reset_url = f"http://localhost:5173/password-reset-confirm/{user.pk}/{token}/"
-            #reset_url = request.build_absolute_uri(reverse('password-reset-confirm', args=[user.pk, token]))
             send_mail(
                 'Password Reset Request',
                 f'Click the link to reset your password: {reset_url}',
@@ -125,6 +99,7 @@ class PasswordResetRequestView(APIView):
 
 class PasswordResetConfirmView(APIView):
     def post(self, request, user_id, token):
+        """Confirma el restablecimiento de contraseña y actualiza la nueva clave."""
         try:
             user = User.objects.get(pk=user_id)
             if PasswordResetTokenGenerator().check_token(user, token):
@@ -137,3 +112,78 @@ class PasswordResetConfirmView(APIView):
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+        
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(username=username, password=password)
+        
+        if user is None:
+            return Response({"error": "Credenciales inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if user.is_2fa_enabled:
+            otp_code = request.data.get("otp_code")
+            if not otp_code:
+                return Response({"message": "Se requiere código OTP."}, status=status.HTTP_206_PARTIAL_CONTENT)
+            
+            if not user.verify_otp(otp_code):
+                return Response({"error": "Código OTP inválido o expirado."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
+        }, status=status.HTTP_200_OK)
+
+class Verify2FAView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        otp_code = request.data.get("otp_code")
+        
+        if not otp_code:
+            return Response({"error": "Se requiere un código OTP."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if user.verify_otp(otp_code):
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh)
+            }, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Código OTP inválido o expirado."}, status=status.HTTP_400_BAD_REQUEST)
+
+class Toggle2FAView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        enable_2fa = request.data.get("enable_2fa")
+        
+        if enable_2fa:
+            if not user.otp_secret:
+                user.generate_otp_secret()
+            user.is_2fa_enabled = True
+            user.send_2fa_email("La autenticación en dos pasos ha sido activada en su cuenta.")
+        else:
+            user.is_2fa_enabled = False
+            user.send_2fa_email("La autenticación en dos pasos ha sido desactivada en su cuenta.")
+        
+        user.save()
+        return Response({"message": "Configuración de 2FA actualizada."}, status=status.HTTP_200_OK)
+
+class RegenerateOTPSecretView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        user.generate_otp_secret()
+        user.save()
+        return Response({
+            "message": "Secreto OTP regenerado con éxito.",
+            "otp_uri": user.get_totp_uri()
+        }, status=status.HTTP_200_OK)
