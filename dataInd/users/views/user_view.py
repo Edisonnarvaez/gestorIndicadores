@@ -77,6 +77,35 @@ class UserViewSet(viewsets.ModelViewSet):
         user.otp_secret = None
         user.save()
         return Response({'message': '2FA desactivado'}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get', 'put'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        """Obtiene o actualiza el perfil del usuario autenticado."""
+        if request.method == 'GET':
+            serializer = UserSerializer(request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == 'PUT':
+            serializer = UserSerializer(request.user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def change_password(self, request):
+        """Cambia la contraseña del usuario autenticado."""
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        if not current_password or not new_password:
+            return Response({'error': 'Se requieren ambas contraseñas'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not request.user.check_password(current_password):
+            return Response({'error': 'Contraseña actual incorrecta'}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.set_password(new_password)
+        request.user.save()
+        return Response({'message': 'Contraseña actualizada'}, status=status.HTTP_200_OK)
 
 class PasswordResetRequestView(APIView):
     def post(self, request):
@@ -175,7 +204,28 @@ class Toggle2FAView(APIView):
         
         user.save()
         return Response({"message": "Configuración de 2FA actualizada."}, status=status.HTTP_200_OK)
+    #se agrego el siguiente codigo
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def toggle_2fa(self, request):
+        """Activa o desactiva el 2FA para el usuario autenticado."""
+        enable_2fa = request.data.get('enable_2fa', False)
+        user = request.user
 
+        if enable_2fa:
+            if not user.otp_secret:
+                user.generate_otp_secret()
+            user.is_2fa_enabled = True
+            user.save()
+            return Response({
+                'message': '2FA activado',
+                'secret': user.otp_secret,
+                'otp_uri': user.get_totp_uri()
+            }, status=status.HTTP_200_OK)
+        else:
+            user.is_2fa_enabled = False
+            user.save()
+            return Response({'message': '2FA desactivado'}, status=status.HTTP_200_OK)
+#hasta aqui
 class RegenerateOTPSecretView(APIView):
     permission_classes = [IsAuthenticated]
 

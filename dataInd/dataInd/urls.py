@@ -17,42 +17,26 @@ Including another URLconf
 
 from django.urls import path, include
 from django.contrib import admin
-#from indicadores import urls as indicadores_url
-
-from django.urls import path
 from users.views.user_view import PasswordResetRequestView, PasswordResetConfirmView, UserViewSet
-
-#from users.views import enable_2fa, get_2fa_qr, verify_2fa
 from rest_framework.routers import DefaultRouter
 
-# Router para UserViewSet
-#router = DefaultRouter()
-#router.register(r'users', UserViewSet, basename='users')
 
-
+# con esta configuracion estaba funcioonando 
 urlpatterns = [
+    # Administración de Django
     path('admin/', admin.site.urls),
 
+    # Endpoints de la API
     path('api/', include('indicators.urls')), 
     path('api/', include('companies.urls')), 
     path('api/', include('users.urls')), 
 
-    # Autenticación
+    # Autenticación con DRF
     path('api/auth/', include('rest_framework.urls')),
 
-    #path('api-auth/', include('rest_framework.urls')),
-    #path('api-token-auth/', include('rest_framework.urls')),
-
-    # Reset de contraseña
-    #path('api/password-reset/', PasswordResetRequestView.as_view(), name='password-reset'),
-    #path('api/password-reset-confirm/<int:user_id>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 
     path('password-reset/', PasswordResetRequestView.as_view(), name='password-reset'),
     path('password-reset-confirm/<int:user_id>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
-
-    #path("enable-2fa/", enable_2fa, name="enable_2fa"),
-    #path("get-2fa-qr/", get_2fa_qr, name="get_2fa_qr"),
-    #path("verify-2fa/", verify_2fa, name="verify_2fa"),
 
     # 2FA
     path("api/enable-2fa/", UserViewSet.as_view({'post': 'enable_2fa'}), name="enable_2fa"),
