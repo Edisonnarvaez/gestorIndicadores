@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'firstName', 'lastName', 'username', 'email', 'phone', 
             'company', 'department', 'role', 'status', 'creationDate', 
-            'updateDate', 'lastLogin', 'password'
+            'updateDate', 'lastLogin', 'password', 'is_2fa_enabled'
         ]
         extra_kwargs = {
             'password': {'write_only': True},  # Asegura que las contraseñas no se devuelvan en las respuestas

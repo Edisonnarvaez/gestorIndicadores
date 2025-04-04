@@ -29,7 +29,7 @@ class UserViewSet(viewsets.ModelViewSet):
             'access': str(refresh.access_token)
         }
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login(self, request):
         """Autenticación con username y password. Si tiene 2FA activado, solicita el código OTP."""
         serializer = LoginSerializer(data=request.data)
@@ -47,7 +47,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def verify_2fa(self, request):
         """Verifica el código 2FA y devuelve un token JWT."""
         user_id = request.data.get('user_id')
@@ -205,7 +205,8 @@ class Toggle2FAView(APIView):
         user.save()
         return Response({"message": "Configuración de 2FA actualizada."}, status=status.HTTP_200_OK)
     #se agrego el siguiente codigo
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    #@action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])#, permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])#, permission_classes=[AllowAny])
     def toggle_2fa(self, request):
         """Activa o desactiva el 2FA para el usuario autenticado."""
         enable_2fa = request.data.get('enable_2fa', False)
