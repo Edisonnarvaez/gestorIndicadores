@@ -39,8 +39,11 @@ class UserViewSet(viewsets.ModelViewSet):
             user = authenticate(username=username, password=password)
 
             if user is not None:
-                if user.otp_secret:
-                    return Response({'message': 'Ingrese su código 2FA', 'user_id': user.id}, status=status.HTTP_200_OK)
+                if user.is_2fa_enabled and user.otp_secret:  # Usa is_2fa_enabled
+                    return Response(
+                        {'message': 'Ingrese su código 2FA', 'user_id': user.id},
+                        status=status.HTTP_200_OK
+                    )
                 
                 tokens = self.get_tokens_for_user(user)
                 return Response(tokens, status=status.HTTP_200_OK)
@@ -62,6 +65,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         tokens = self.get_tokens_for_user(user)
         return Response(tokens, status=status.HTTP_200_OK)
+    
 
     @action(detail=False, methods=['post'])
     def enable_2fa(self, request):
@@ -198,25 +202,6 @@ class Toggle2FAView(APIView):
                 user.generate_otp_secret()
             user.is_2fa_enabled = True
             user.send_2fa_email("La autenticación en dos pasos ha sido activada en su cuenta.")
-        else:
-            user.is_2fa_enabled = False
-            user.send_2fa_email("La autenticación en dos pasos ha sido desactivada en su cuenta.")
-        
-        user.save()
-        return Response({"message": "Configuración de 2FA actualizada."}, status=status.HTTP_200_OK)
-    #se agrego el siguiente codigo
-    #@action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])#, permission_classes=[AllowAny])
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])#, permission_classes=[AllowAny])
-    def toggle_2fa(self, request):
-        """Activa o desactiva el 2FA para el usuario autenticado."""
-        enable_2fa = request.data.get('enable_2fa', False)
-        user = request.user
-
-        if enable_2fa:
-            if not user.otp_secret:
-                user.generate_otp_secret()
-            user.is_2fa_enabled = True
-            user.save()
             return Response({
                 'message': '2FA activado',
                 'secret': user.otp_secret,
@@ -224,8 +209,36 @@ class Toggle2FAView(APIView):
             }, status=status.HTTP_200_OK)
         else:
             user.is_2fa_enabled = False
+            user.otp_secret = None  # Asegúrate de limpiar otp_secret
+            user.send_2fa_email("La autenticación en dos pasos ha sido desactivada en su cuenta.")
             user.save()
-            return Response({'message': '2FA desactivado'}, status=status.HTTP_200_OK)
+            #return Response({"message": "2FA desactivado"}, status=status.HTTP_200_OK)
+        
+        user.save()
+        return Response({"message": "Configuración de 2FA actualizada."}, status=status.HTTP_200_OK)
+    #se agrego el siguiente codigo
+    #@action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])#, permission_classes=[AllowAny])
+#    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])#, permission_classes=[AllowAny])
+#    def toggle_2fa(self, request):
+#        """Activa o desactiva el 2FA para el usuario autenticado."""
+#        enable_2fa = request.data.get('enable_2fa', False)
+#        user = request.user
+
+#        if enable_2fa:
+#            if not user.otp_secret:
+#                user.generate_otp_secret()
+#            user.is_2fa_enabled = True
+#            user.save()
+#            return Response({
+#                'message': '2FA activado',
+#                'secret': user.otp_secret,
+#                'otp_uri': user.get_totp_uri()
+#            }, status=status.HTTP_200_OK)
+#        else:
+#            user.is_2fa_enabled = False
+#            user.otp_secret = None  # Asegúrate de limpiar otp_secret
+#            user.save()
+#            return Response({'message': '2FA desactivado'}, status=status.HTTP_200_OK)
 #hasta aqui
 class RegenerateOTPSecretView(APIView):
     permission_classes = [IsAuthenticated]
