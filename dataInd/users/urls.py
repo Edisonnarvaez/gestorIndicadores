@@ -17,9 +17,9 @@ urlpatterns = [
 
     # Autenticación y seguridad
     path("login/", LoginView.as_view(), name="login"),
-    path("2fa/toggle/", Toggle2FAView.as_view(), name="toggle-2fa"),
-    path("2fa/verify/", Verify2FAView.as_view(), name="verify-2fa"),
-    path("2fa/regenerate/", RegenerateOTPSecretView.as_view(), name="regenerate-otp-secret"),
+    path("users/2fa/toggle/", Toggle2FAView.as_view(), name="toggle-2fa"),
+    path("users/2fa/verify/", Verify2FAView.as_view(), name="verify-2fa"),
+    path("users/2fa/regenerate/", RegenerateOTPSecretView.as_view(), name="regenerate-otp-secret"),
 
 
 ]

@@ -81,7 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.send_2fa_email("Se ha generado un nuevo secreto OTP.")
     
     def get_totp_uri(self):
-        return pyotp.TOTP(self.otp_secret).provisioning_uri(self.email, issuer_name="MiApp")
+        return pyotp.TOTP(self.otp_secret).provisioning_uri(self.email, issuer_name="MiAppDataInd")
 
     def generate_otp_code(self):
         otp = pyotp.TOTP(self.otp_secret)
@@ -95,8 +95,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.otp_locked_until and now() < self.otp_locked_until:
             return False  # Usuario bloqueado temporalmente
 
-        if self.otp_expires_at and now() > self.otp_expires_at:
-            return False  # Código OTP expirado
+        #if self.otp_expires_at and now() > self.otp_expires_at:
+        #    return False  # Código OTP expirado
 
         otp = pyotp.TOTP(self.otp_secret)
         if otp.verify(otp_code):
@@ -107,7 +107,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return True
         
         self.otp_attempts += 1
-        if self.otp_attempts >= 3:  # Bloquear después de 3 intentos fallidos
+        if self.otp_attempts >= 5:  # Bloquear después de 5 intentos fallidos
             self.otp_locked_until = now() + timedelta(minutes=5)
             self.send_2fa_email("Su cuenta ha sido bloqueada temporalmente por intentos fallidos de OTP.")
         self.save()
