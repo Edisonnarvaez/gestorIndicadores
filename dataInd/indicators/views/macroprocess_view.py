@@ -4,9 +4,11 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import viewsets
 from ..models import MacroProcess
 from ..serializers.macroprocess_serializer import MacroProcessSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 # ViewSet para MacroProcess
 class MacroProcessViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = MacroProcess.objects.all()
     serializer_class = MacroProcessSerializer
     

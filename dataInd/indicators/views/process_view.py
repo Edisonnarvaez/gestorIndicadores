@@ -6,8 +6,10 @@ from rest_framework.decorators import action
 from rest_framework import viewsets
 from ..models import Process
 from ..serializers.process_serializer import ProcessSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 class ProcessViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Process.objects.all()
     serializer_class = ProcessSerializer
     # Método para listar todas las compañías (GET)

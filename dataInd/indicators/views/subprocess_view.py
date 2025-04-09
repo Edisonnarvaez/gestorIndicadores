@@ -6,11 +6,13 @@ from rest_framework.decorators import action
 from rest_framework import viewsets
 from ..models import SubProcess
 from ..serializers.subprocess_serializer import SubProcessSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 class SubProcessViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = SubProcess.objects.all()
     serializer_class = SubProcessSerializer
-     # Método para listar todas las compañías (GET)
+    # Método para listar todas las compañías (GET)
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)

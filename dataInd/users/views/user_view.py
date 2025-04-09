@@ -112,6 +112,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({'message': 'Contraseña actualizada'}, status=status.HTTP_200_OK)
 
 class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         """Genera un token para restablecer contraseña y envía un email."""
         email = request.data.get('email')
@@ -131,6 +132,7 @@ class PasswordResetRequestView(APIView):
             return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, user_id, token):
         """Confirma el restablecimiento de contraseña y actualiza la nueva clave."""
         try:

@@ -6,8 +6,10 @@ from rest_framework.decorators import action
 from rest_framework import viewsets
 from ..models import Result
 from ..serializers.result_serializer import ResultSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 class ResultViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Result.objects.all()
     serializer_class = ResultSerializer
     
