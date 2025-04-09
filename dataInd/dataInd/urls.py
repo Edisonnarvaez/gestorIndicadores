@@ -20,6 +20,10 @@ from django.contrib import admin
 from users.views.user_view import PasswordResetRequestView, PasswordResetConfirmView, UserViewSet
 from rest_framework.routers import DefaultRouter
 
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 # con esta configuracion estaba funcioonando 
 urlpatterns = [
@@ -42,5 +46,9 @@ urlpatterns = [
     path("api/enable-2fa/", UserViewSet.as_view({'post': 'enable_2fa'}), name="enable_2fa"),
     path("api/disable-2fa/", UserViewSet.as_view({'post': 'disable_2fa'}), name="disable_2fa"),
     path("api/verify-2fa/", UserViewSet.as_view({'post': 'verify_2fa'}), name="verify_2fa"),
+
+    # 🔐 JWT Token - Login y Refresh
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),        # opcional
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),        # ✅ necesario para auto-refresh
 
 ]

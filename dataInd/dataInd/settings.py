@@ -165,3 +165,14 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "stiven.98020@gmail.com"  # Cambia esto por tu correo
 EMAIL_HOST_PASSWORD = "tbaivckhijgizgpk"  # Usa una contraseña de aplicación si es Gmail
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),      # Puedes ajustar a 5, 10, 30...
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),         # Por ejemplo, 7 días de sesión persistente
+    "ROTATE_REFRESH_TOKENS": True,                       # Opcional: genera un nuevo refresh cada vez que se usa
+    "BLACKLIST_AFTER_ROTATION": True,                    # Evita reuso del refresh antiguo
+    "AUTH_HEADER_TYPES": ("Bearer",),                    # Para usar 'Authorization: Bearer <token>'
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}

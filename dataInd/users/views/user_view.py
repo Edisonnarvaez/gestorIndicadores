@@ -18,6 +18,7 @@ from django.contrib.auth import authenticate
 User = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -119,6 +120,7 @@ class PasswordResetRequestView(APIView):
         try:
             user = User.objects.get(email=email)
             token = PasswordResetTokenGenerator().make_token(user)
+            # Aquí deberías enviar un correo al usuario con el token
             reset_url = f"http://localhost:5173/password-reset-confirm/{user.pk}/{token}/"
             send_mail(
                 'Password Reset Request',
