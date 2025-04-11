@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
@@ -13,6 +14,15 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+from email.mime.image import MIMEImage
+import os
+from django.conf import settings
+
 
 
 User = get_user_model()
@@ -114,22 +124,42 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
-        """Genera un token para restablecer contraseña y envía un email."""
         email = request.data.get('email')
         try:
             user = User.objects.get(email=email)
             token = PasswordResetTokenGenerator().make_token(user)
-            # Aquí deberías enviar un correo al usuario con el token
             reset_url = f"http://localhost:5173/password-reset-confirm/{user.pk}/{token}/"
-            send_mail(
-                'Password Reset Request',
-                f'Click the link to reset your password: {reset_url}',
-                'noreply@example.com',
-                [email],
-                fail_silently=False,
+            context = {
+                'user': user,
+                'reset_url': reset_url,
+                'year': datetime.now().year
+            }
+
+            html_content = render_to_string("emails/password_reset.html", context)
+            text_content = strip_tags(html_content)
+
+            email_message = EmailMultiAlternatives(
+                subject='Restablecimiento de contraseña',
+                body=text_content,
+                from_email='noreply@example.com',
+                to=[email],
             )
+            email_message.attach_alternative(html_content, "text/html")
+
+            # Adjunta el logo con CID
+            logo_path = os.path.join(settings.BASE_DIR, 'users', 'templates', 'assets', 'logoslogan.png')
+            with open(logo_path, 'rb') as f:
+                logo = MIMEImage(f.read())
+                logo.add_header('Content-ID', '<logo_image>')
+                logo.add_header('Content-Disposition', 'inline', filename='logoslogan.png')
+                email_message.attach(logo)
+
+            email_message.send()
+
             return Response({'message': 'Password reset link sent'}, status=status.HTTP_200_OK)
+
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
 
