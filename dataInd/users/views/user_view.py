@@ -245,20 +245,36 @@ class Toggle2FAView(APIView):
                     user.generate_otp_secret()
                 else:
                     user.otp_secret = pyotp.random_base32()
+
             user.is_2fa_enabled = True
-            user.send_2fa_email("La autenticación en dos pasos ha sido activada en su cuenta.")
             user.save()
+
+            # SOLO aquí envías el correo con todo (secret + uri + QR)
+            user.send_2fa_email(
+                "La autenticación en dos pasos ha sido activada en su cuenta.",
+                otp_secret=user.otp_secret,
+                otp_uri=user.get_totp_uri(),
+                enabled=True
+            )
+
             return Response({
                 'message': '2FA activado',
                 'secret': user.otp_secret,
                 'otp_uri': user.get_totp_uri()
             }, status=status.HTTP_200_OK)
+
         else:
             # Desactivar 2FA
             user.is_2fa_enabled = False
             user.otp_secret = ""
-            user.send_2fa_email("La autenticación en dos pasos ha sido desactivada en su cuenta.")
             user.save()
+
+            # Enviar notificación de desactivación
+            user.send_2fa_email(
+                "La autenticación en dos pasos ha sido desactivada en su cuenta.",
+                enabled=False
+            )
+
             return Response({
                 "is_2fa_enabled": user.is_2fa_enabled,
                 "otp_secret": None,
