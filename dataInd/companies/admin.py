@@ -23,6 +23,6 @@ class DepartmentAdmin(admin.ModelAdmin):
 @admin.register(Headquarters)
 class HeadquartersAdmin(admin.ModelAdmin):
     list_display = ('id', 'habilitationCode', 'name', 'company', 'departament', 'city', 'address', 'habilitationDate', 'closingDate', 'status')
-    search_fields = ('habilitationCode', 'name', 'company__name', 'departament__name')
+    search_fields = ('habilitationCode', 'name', 'company__name')
     list_filter = ('status',)
     ordering = ('id',)
