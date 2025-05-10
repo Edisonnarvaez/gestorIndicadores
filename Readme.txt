@@ -27,6 +27,7 @@ Asegúrate de tener una clave secreta (ya generada automáticamente) y de que DE
 
 4. Migraciones Iniciales
 
+python manage.py makemigrations
 python manage.py migrate
 
 5. Creación de una Aplicación Django

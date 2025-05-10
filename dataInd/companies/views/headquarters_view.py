@@ -6,12 +6,12 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 class HeadquartersViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = Headquarters.objects.select_related('company').all()
+    #permission_classes = [IsAuthenticated]
+    queryset = Headquarters.objects.select_related('headquarter').all()
     serializer_class = HeadquartersSerializer
 
     def get_queryset(self):
-        queryset = Headquarters.objects.select_related('company').all()
+        queryset = Headquarters.objects.select_related('headquarter').all()
         return queryset
 
     def list(self, request, *args, **kwargs):

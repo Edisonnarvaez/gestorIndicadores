@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models.company import Company
 from .models.department import Department
+from .models.headquarters import Headquarters
 
 # Configurar el modelo Company en el admin
 @admin.register(Company)
@@ -18,3 +19,10 @@ class DepartmentAdmin(admin.ModelAdmin):
     list_filter = ('status',)
     ordering = ('id',)
 
+# Configurar el modelo Headquarters en el admin
+@admin.register(Headquarters)
+class HeadquartersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'habilitationCode', 'name', 'company', 'departament', 'city', 'address', 'habilitationDate', 'closingDate', 'status')
+    search_fields = ('habilitationCode', 'name', 'company__name', 'departament__name')
+    list_filter = ('status',)
+    ordering = ('id',)
