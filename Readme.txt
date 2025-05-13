@@ -27,6 +27,7 @@ Asegúrate de tener una clave secreta (ya generada automáticamente) y de que DE
 
 4. Migraciones Iniciales
 
+python manage.py makemigrations
 python manage.py migrate
 
 5. Creación de una Aplicación Django
@@ -46,6 +47,18 @@ pip freeze > requirements.txt
 
 pip install -r requirements.txt
 
+
+python.exe -m pip install --upgrade pip
+
 para desactivar se coloca deactivate en la terminal y ya 
 deactivate
 
+
+
+
+Para revisar 
+
+un nuevo modelo y un nuevo campo en en el modelo de indicadores 
+para agregar periodicidad 
+ posteriormente en rewsultados agregar el nombre de la sede 
+crear un nuivo modelos de sedes 
