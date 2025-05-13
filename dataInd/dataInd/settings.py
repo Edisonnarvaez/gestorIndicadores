@@ -139,6 +139,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  # URL donde corre Vite
     'http://127.0.0.1:5173', # URL donde corre Vite
+    'https://dataind.up.railway.app',
 ]
 
 REST_FRAMEWORK = {
