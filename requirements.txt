@@ -15,8 +15,10 @@ psycopg2==2.9.9
 psycopg2-binary==2.9.9
 PyJWT==2.9.0
 pyotp==2.9.0
+python-dotenv==1.1.0
 pytz==2023.3.post1
 qrcode==8.0
 sqlparse==0.4.4
 tzdata==2023.3
 virtualenv==20.24.5
+whitenoise==6.9.0
