@@ -28,7 +28,10 @@ SECRET_KEY = 'django-insecure-p&fk&!8(&sskxw)p=%4@(*o1^$x4eylrct@0s95!msqj0(t!2v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173','127.0.0.1:8000',
+    'https://dataind.up.railway.app','gestorindicadores.up.railway.app']
 
 
 # Application definition
