@@ -36,7 +36,7 @@ if str(APP_ROOT_DIR) not in sys.path:
 # de especificar esto, en lugar de fijarlo aquí.
 # Pero si necesitas asegurarte, puedes verificar la estructura.
 # Por ahora, confiemos en que está bien configurada en Railway o por defecto.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dataInd.settings") # Esta línea es estándar.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dataInd.dataInd.settings") # Esta línea es estándar.
                                                                     # El problema es que 'dataInd' (el módulo de settings)
                                                                     # debe ser encontrable, y 'users' también.
 
