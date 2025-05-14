@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'dataInd.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DB_LIVE = os.environ('DB_LIVE')
+DB_LIVE = os.environ['DB_LIVE']
 
 if DB_LIVE in ['False', False, '0']:
     DATABASES = {
