@@ -181,7 +181,7 @@ REST_FRAMEWORK = {
 
 # Configuración de envío de correos
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.environ["EMAIL_HOTS"]  # Servidor SMTP (Gmail en este caso)
+EMAIL_HOST = "smtp.gmail.com"  # Servidor SMTP (Gmail en este caso)
 EMAIL_PORT = os.environ["EMAIL_PORT"]  # Puerto para TLS
 EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"]  # Usar TLS
 EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]  # Cambia esto por tu correo
