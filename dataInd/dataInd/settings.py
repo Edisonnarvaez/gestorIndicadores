@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'dataInd.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DB_LIVE = os.getenv('DB_LIVE')
+DB_LIVE = os.environ('DB_LIVE')
 
 if DB_LIVE in ['False', False, '0']:
     DATABASES = {
@@ -100,11 +100,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT'),
+            'NAME': os.environ('DB_NAME'),
+            'USER': os.environ('DB_USER'),
+            'PASSWORD': os.environ('DB_PASSWORD'),
+            'HOST': os.environ('DB_HOST'),
+            'PORT': os.environ('DB_PORT'),
         }
     }
 
@@ -181,11 +181,11 @@ REST_FRAMEWORK = {
 
 # Configuración de envío de correos
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOTS")  # Servidor SMTP (Gmail en este caso)
-EMAIL_PORT = os.getenv("EMAIL_PORT")  # Puerto para TLS
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")  # Usar TLS
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")  # Cambia esto por tu correo
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # Usa una contraseña de aplicación si es Gmail
+EMAIL_HOST = os.environ("EMAIL_HOTS")  # Servidor SMTP (Gmail en este caso)
+EMAIL_PORT = os.environ("EMAIL_PORT")  # Puerto para TLS
+EMAIL_USE_TLS = os.environ("EMAIL_USE_TLS")  # Usar TLS
+EMAIL_HOST_USER = os.environ("EMAIL_HOST_USER")  # Cambia esto por tu correo
+EMAIL_HOST_PASSWORD = os.environ("EMAIL_HOST_PASSWORD")  # Usa una contraseña de aplicación si es Gmail
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 from datetime import timedelta
