@@ -90,17 +90,7 @@ WSGI_APPLICATION = 'dataInd.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DB_LIVE = os.environ['DB_LIVE']
-
-if DB_LIVE in ['False', False, '0']:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
+DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ['DB_NAME'],
@@ -110,6 +100,27 @@ else:
             'PORT': os.environ['DB_PORT'],
         }
     }
+
+#DB_LIVE = os.environ['DB_LIVE']
+
+#if DB_LIVE in ['False', False, '0']:
+#    DATABASES = {
+#        'default': {
+#            'ENGINE': 'django.db.backends.sqlite3',
+#            'NAME': BASE_DIR / 'db.sqlite3',
+#        }
+#    }
+#else:
+#    DATABASES = {
+#        'default': {
+#            'ENGINE': 'django.db.backends.postgresql',
+#            'NAME': os.environ['DB_NAME'],
+#            'USER': os.environ['DB_USER'],
+#            'PASSWORD': os.environ['DB_PASSWORD'],
+#            'HOST': os.environ['DB_HOST'],
+#            'PORT': os.environ['DB_PORT'],
+#        }
+#    }`
 
 #revisar el tema de la autentificacion por medio de esta aplicacion
 AUTH_USER_MODEL = 'users.User'
