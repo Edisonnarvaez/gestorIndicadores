@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -27,12 +26,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-p&fk&!8(&sskxw)p=%4@(*o1^$x4eylrct@0s95!msqj0(t!2v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False  # Cambiado a False para producción
 
-ALLOWED_HOSTS = ["*"]
+# Hosts permitidos en producción
+ALLOWED_HOSTS = [
+    'dataind.up.railway.app',  # Dominio de Railway
+    'gestorindicadores.up.railway.app',
+]
+
+# Configuración de orígenes confiables para CSRF
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173','127.0.0.1:8000',
-    'https://dataind.up.railway.app','gestorindicadores.up.railway.app']
+    'http://localhost:5173',
+    'http://127.0.0.1:8000',
+    'https://dataind.up.railway.app',
+    'https://gestorindicadores.up.railway.app',
+]
 
 
 # Application definition
@@ -56,7 +64,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Sirve archivos estáticos
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,7 +72,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    
 ]
 
 ROOT_URLCONF = 'dataInd.urls'
@@ -95,44 +102,23 @@ DATABASES = {
     'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 }
 
-#DATABASES = {
-#        'default': {
-#            'ENGINE': 'django.db.backends.postgresql',
-#            'NAME': os.environ['DB_NAME'],
-#            'USER': os.environ['DB_USER'],
-#            'PASSWORD': os.environ['DB_PASSWORD'],
-#            'HOST': os.environ['DB_HOST'],
-#            'PORT': os.environ['DB_PORT'],
-#        }
-#    }
+# Ajustes opcionales comentados:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.environ['DB_NAME'],
+#         'USER': os.environ['DB_USER'],
+#         'PASSWORD': os.environ['DB_PASSWORD'],
+#         'HOST': os.environ['DB_HOST'],
+#         'PORT': os.environ['DB_PORT'],
+#     }
+# }
 
-#DB_LIVE = os.environ['DB_LIVE']
-
-#if DB_LIVE in ['False', False, '0']:
-#    DATABASES = {
-#        'default': {
-#            'ENGINE': 'django.db.backends.sqlite3',
-#            'NAME': BASE_DIR / 'db.sqlite3',
-#        }
-#    }
-#else:
-#    DATABASES = {
-#        'default': {
-#            'ENGINE': 'django.db.backends.postgresql',
-#            'NAME': os.environ['DB_NAME'],
-#            'USER': os.environ['DB_USER'],
-#            'PASSWORD': os.environ['DB_PASSWORD'],
-#            'HOST': os.environ['DB_HOST'],
-#            'PORT': os.environ['DB_PORT'],
-#        }
-#    }`
-
-#revisar el tema de la autentificacion por medio de esta aplicacion
+# AUTHENTICATION MODEL
 AUTH_USER_MODEL = 'users.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -149,26 +135,20 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-#STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'  # Asegura la barra inicial
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Carpeta donde collectstatic deposita
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
@@ -176,20 +156,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CORS
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  # URL donde corre Vite
-    'http://127.0.0.1:5173', # URL donde corre Vite
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'https://dataind.up.railway.app',
 ]
 
+# REST Framework
 REST_FRAMEWORK = {
-#    'DEFAULT_AUTHENTICATION_CLASSES': [
-#        'rest_framework.authentication.TokenAuthentication',
-#    ],
-#    'DEFAULT_PERMISSION_CLASSES': [
-#        'rest_framework.permissions.IsAuthenticated',
-#    ]
-
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -198,24 +173,22 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 # Configuración de envío de correos
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"  # Servidor SMTP (Gmail en este caso)
-EMAIL_PORT = os.environ["EMAIL_PORT"]  # Puerto para TLS
-EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"]  # Usar TLS
-EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]  # Cambia esto por tu correo
-EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]  # Usa una contraseña de aplicación si es Gmail
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = os.environ.get("EMAIL_PORT")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),      # Puedes ajustar a 5, 10, 30...
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),         # Por ejemplo, 7 días de sesión persistente
-    "ROTATE_REFRESH_TOKENS": True,                       # Opcional: genera un nuevo refresh cada vez que se usa
-    "BLACKLIST_AFTER_ROTATION": True,                    # Evita reuso del refresh antiguo
-    "AUTH_HEADER_TYPES": ("Bearer",),                    # Para usar 'Authorization: Bearer <token>'
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
-
