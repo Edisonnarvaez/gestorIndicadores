@@ -14,8 +14,7 @@ db.sqlite3
 /static
 /media
 
-# Archivos de migraciones
-migrations/
+
 
 # Archivos de log
 *.log

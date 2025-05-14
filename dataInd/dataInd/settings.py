@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,7 +63,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'dataInd.urls'
-import os
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -83,12 +86,26 @@ WSGI_APPLICATION = 'dataInd.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DB_LIVE = os.getenv('DB_LIVE')
+
+if DB_LIVE in ['False', False, '0']:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
+    }
 
 #revisar el tema de la autentificacion por medio de esta aplicacion
 AUTH_USER_MODEL = 'users.User'
@@ -161,11 +178,11 @@ REST_FRAMEWORK = {
 
 # Configuración de envío de correos
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"  # Servidor SMTP (Gmail en este caso)
-EMAIL_PORT = 587  # Puerto para TLS
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "stiven.98020@gmail.com"  # Cambia esto por tu correo
-EMAIL_HOST_PASSWORD = "tbaivckhijgizgpk"  # Usa una contraseña de aplicación si es Gmail
+EMAIL_HOST = os.getenv("EMAIL_HOTS")  # Servidor SMTP (Gmail en este caso)
+EMAIL_PORT = os.getenv("EMAIL_PORT")  # Puerto para TLS
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")  # Usar TLS
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")  # Cambia esto por tu correo
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # Usa una contraseña de aplicación si es Gmail
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 from datetime import timedelta
