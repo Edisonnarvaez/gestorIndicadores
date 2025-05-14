@@ -1,43 +1,110 @@
-# dataInd/wsgi.py (o dataInd/dataInd/wsgi.py según corresponda a tu estructura local antes de desplegar)
+# En tu archivo local: dataInd/wsgi.py
 import os
 import sys
 from pathlib import Path
-from django.core.wsgi import get_wsgi_application
+import logging # Importar logging
+from django.core.wsgi import get_wsgi_application # Mover la importación aquí
 
-# Determinar la ruta al directorio raíz del proyecto (/app)
-# Si wsgi.py está en /app/dataInd/dataInd/wsgi.py, entonces /app es tres niveles arriba.
-# Si wsgi.py está en /app/dataInd/wsgi.py, entonces /app es dos niveles arriba.
+# Configurar logging básico para ver la salida en los logs de Railway
+# (Railway debería capturar la salida estándar)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-# Asumiendo que tu archivo wsgi.py en el repo es dataInd/wsgi.py
-# y en el servidor se convierte en /app/dataInd/dataInd/wsgi.py o similar.
-# Vamos a ser un poco más genéricos para encontrar la raíz que contiene 'users/' y 'dataInd/'
-# Este código asume que 'manage.py' está en la raíz verdadera del proyecto Django
-# y que 'users/' está al mismo nivel que el directorio que contiene 'manage.py'.
+logger.info("--- INICIO SCRIPT WSGI ---")
+logger.info(f"Directorio de trabajo actual (CWD): {os.getcwd()}")
+logger.info(f"Contenido de sys.path INICIAL: {sys.path}")
 
-# Para el caso específico del traceback /app/dataInd/dataInd/wsgi.py:
-# Path(__file__) es /app/dataInd/dataInd/wsgi.py
-# Path(__file__).resolve().parent es /app/dataInd/dataInd
-# Path(__file__).resolve().parent.parent es /app/dataInd
-# Path(__file__).resolve().parent.parent.parent es /app/  <-- Aquí debería estar 'users/'
-APP_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+# Asumimos que este archivo (wsgi.py) en tu repo está en 'dataInd/wsgi.py'
+# y que 'users/' es un directorio hermano de 'dataInd/'
+# Ejemplo de estructura en tu repo:
+# ./manage.py
+# ./dataInd/ (contiene este wsgi.py, settings.py)
+# ./users/ (tu app)
 
-# Añadir este directorio raíz al sys.path si no está ya
-if str(APP_ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_ROOT_DIR))
+# Ruta al archivo wsgi.py actual
+wsgi_file_path = Path(__file__).resolve()
+logger.info(f"Ubicación de wsgi.py: {wsgi_file_path}")
 
-# Asegúrate de que DJANGO_SETTINGS_MODULE apunte correctamente.
-# Si settings.py está en /app/dataInd/dataInd/settings.py,
-# y /app/dataInd/ está en sys.path (porque es CWD), entonces 'dataInd.settings' es correcto.
-# Si /app/ está en sys.path, entonces 'dataInd.dataInd.settings' sería lo correcto.
-# Tu Procfile usa 'dataInd.wsgi', que implica que el CWD de Gunicorn es /app/dataInd/
-# y DJANGO_SETTINGS_MODULE es probablemente 'dataInd.settings'.
+# El traceback dice que wsgi.py está en /app/dataInd/dataInd/wsgi.py en el servidor.
+# Si esa es la ubicación de ESTE archivo en el servidor:
+# - wsgi_file_path.parent es /app/dataInd/dataInd/
+# - wsgi_file_path.parent.parent es /app/dataInd/
+# - wsgi_file_path.parent.parent.parent es /app/
 
-# La variable de entorno DJANGO_SETTINGS_MODULE suele ser la forma preferida
-# de especificar esto, en lugar de fijarlo aquí.
-# Pero si necesitas asegurarte, puedes verificar la estructura.
-# Por ahora, confiemos en que está bien configurada en Railway o por defecto.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dataInd.dataInd.settings") # Esta línea es estándar.
-                                                                    # El problema es que 'dataInd' (el módulo de settings)
-                                                                    # debe ser encontrable, y 'users' también.
+# Supongamos que la raíz de tu proyecto (donde está manage.py y donde users/ debería ser un subdir)
+# termina siendo /app/dataInd/ en el servidor, si todo tu repo se copia dentro de /app/dataInd/
+# O, si tu repo se copia en /app/, entonces la raíz es /app/
 
-application = get_wsgi_application()
+# Vamos a verificar la estructura más probable basada en el traceback:
+# Si wsgi.py es /app/dataInd/dataInd/wsgi.py, entonces settings.py está en el mismo dir.
+# Y 'users' app (como está en el repo: hermana de 'dataInd' proyecto) estaría en /app/dataInd/users/
+# (si todo el repo se copia en /app/dataInd/)
+# O en /app/users/ (si todo el repo se copia en /app/)
+
+# Hipótesis 1: Todo tu repo se copia en /app/dataInd/ en el servidor.
+# Entonces, el CWD (que parece ser /app/dataInd/) sería la raíz efectiva para encontrar 'users'.
+# En este caso, '/app/dataInd/users/' debería existir.
+server_repo_root_h1 = wsgi_file_path.parent.parent # Esto sería /app/dataInd/
+logger.info(f"Hipotética raíz del repo en servidor (H1 - /app/dataInd/): {server_repo_root_h1}")
+logger.info(f"Contenido de {server_repo_root_h1} (ls -a):")
+try:
+    for item in server_repo_root_h1.iterdir():
+        logger.info(f"  H1 - {item.name} {'(dir)' if item.is_dir() else '(file)'}")
+except Exception as e:
+    logger.info(f"  H1 - Error listando contenido de {server_repo_root_h1}: {e}")
+
+expected_users_path_h1 = server_repo_root_h1 / "users"
+logger.info(f"Ruta esperada para 'users' (H1): {expected_users_path_h1}")
+logger.info(f"¿Existe {expected_users_path_h1}? {expected_users_path_h1.exists()}")
+if expected_users_path_h1.exists():
+    logger.info(f"Contenido de {expected_users_path_h1} (ls -a):")
+    try:
+        for item in expected_users_path_h1.iterdir():
+            logger.info(f"  H1 users - {item.name} {'(dir)' if item.is_dir() else '(file)'}")
+    except Exception as e:
+        logger.info(f"  H1 users - Error listando contenido: {e}")
+
+
+# Hipótesis 2: Todo tu repo se copia en /app/ en el servidor.
+# Entonces, '/app/users/' debería existir.
+server_repo_root_h2 = wsgi_file_path.parent.parent.parent # Esto sería /app/
+logger.info(f"Hipotética raíz del repo en servidor (H2 - /app/): {server_repo_root_h2}")
+logger.info(f"Contenido de {server_repo_root_h2} (ls -a):")
+try:
+    for item in server_repo_root_h2.iterdir():
+        logger.info(f"  H2 - {item.name} {'(dir)' if item.is_dir() else '(file)'}")
+except Exception as e:
+    logger.info(f"  H2 - Error listando contenido de {server_repo_root_h2}: {e}")
+
+expected_users_path_h2 = server_repo_root_h2 / "users"
+logger.info(f"Ruta esperada para 'users' (H2): {expected_users_path_h2}")
+logger.info(f"¿Existe {expected_users_path_h2}? {expected_users_path_h2.exists()}")
+if expected_users_path_h2.exists():
+    logger.info(f"Contenido de {expected_users_path_h2} (ls -a):")
+    try:
+        for item in expected_users_path_h2.iterdir():
+            logger.info(f"  H2 users - {item.name} {'(dir)' if item.is_dir() else '(file)'}")
+    except Exception as e:
+        logger.info(f"  H2 users - Error listando contenido: {e}")
+
+# Añadir la ruta que *debería* contener 'users' si la Hipótesis 1 es correcta y CWD es la raíz del repo
+# (CWD suele estar en sys.path por defecto)
+# Si la H1 es correcta, CWD (/app/dataInd/) ya estaría en sys.path.
+# Si la H2 es correcta (/app/ es la raíz), entonces /app/ debería estar en sys.path.
+# La modificación de sys.path que intentaste antes era para la H2.
+if server_repo_root_h2.exists() and str(server_repo_root_h2) not in sys.path:
+    sys.path.insert(0, str(server_repo_root_h2))
+    logger.info(f"Añadido a sys.path (H2): {server_repo_root_h2}")
+    logger.info(f"Contenido de sys.path DESPUÉS de añadir H2: {sys.path}")
+
+
+# Esta variable de entorno es crucial.
+# Si DJANGO_SETTINGS_MODULE es "dataInd.settings":
+# Y el CWD es /app/dataInd/ (que está en sys.path), buscará /app/dataInd/dataInd/settings.py
+# Y esto es consistente con el traceback /app/dataInd/dataInd/wsgi.py
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dataInd.settings")
+logger.info(f"DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE')}")
+
+logger.info("--- ANTES DE LLAMAR a get_wsgi_application ---")
+application = get_wsgi_application() # Esta es la línea 43 en tu último traceback
+logger.info("--- DESPUÉS DE LLAMAR a get_wsgi_application (si no hay error antes) ---")
