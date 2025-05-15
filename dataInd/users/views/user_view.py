@@ -130,7 +130,7 @@ class PasswordResetRequestView(APIView):
         try:
             user = User.objects.get(email=email)
             token = PasswordResetTokenGenerator().make_token(user)
-            reset_url = f"http://localhost:5173/password-reset-confirm/{user.pk}/{token}/"
+            reset_url = f"https://gestorindicadores.onrender.com/password-reset-confirm/{user.pk}/{token}/"
             context = {
                 'user': user,
                 'reset_url': reset_url,
