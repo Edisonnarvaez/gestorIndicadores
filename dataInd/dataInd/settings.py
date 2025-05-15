@@ -42,6 +42,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'https://dataind.up.railway.app',
     'https://gestorindicadores.up.railway.app',
+    'https://gestorindicadores.onrender.com',
 ]
 
 
