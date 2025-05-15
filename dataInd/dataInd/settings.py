@@ -32,6 +32,8 @@ DEBUG = False  # Cambiado a False para producción
 ALLOWED_HOSTS = [
     'dataind.up.railway.app',  # Dominio de Railway
     'gestorindicadores.up.railway.app',
+    'gestorindicadores.onrender.com',
+    'localhost',
 ]
 
 # Configuración de orígenes confiables para CSRF
@@ -161,6 +163,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'https://dataind.up.railway.app',
+    'https://gestorindicadores.onrender.com',
 ]
 
 # REST Framework
